@@ -1,18 +1,19 @@
 package OceanEngineApi
 
 import (
+	"bytes"
 	"encoding/base64"
+	"encoding/json"
+	"errors"
 	"github.com/MrNullPoint/OceanEngineApi/pb"
 	"github.com/golang/protobuf/proto"
-	"github.com/tidwall/gjson"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
 
 const (
 	ApiDmpDataSourceFileUpload = ApiUrlPrefix + ApiVersion + "/dmp/data_source/file/upload/"
-	API_DMP_DATA_SOURCE_CREATE = ApiUrlPrefix + ApiVersion + "/dmp/data_source/file/upload/"
+	ApiDmpDataSourceCreate     = ApiUrlPrefix + ApiVersion + "/dmp/data_source/create/"
 )
 
 // @function: 构建 DMP 所需要的上传的 zip 文件
@@ -53,8 +54,16 @@ func (api *OceanEngineApi) DataSourceFileCompose(data []*pb.DmpData, path string
 	return zipPath, nil
 }
 
+type DataSourceFileUploadResp struct {
+	OceanEngineResp
+	Data struct {
+		FilePath string `json:"file_path"`
+	} `json:"data"`
+}
+
 // @function: 数据源文件上传
-func (api *OceanEngineApi) DataSourceFileUpload(file string, advertiserId string) (string, error) {
+// @reference: https://ad.oceanengine.com/openapi/doc/index.html?id=501
+func (api *OceanEngineApi) DataSourceFileUpload(file string, advertiserId string) (*DataSourceFileUploadResp, error) {
 	params := make(map[string]string)
 	params["advertiseId"] = advertiserId
 
@@ -63,26 +72,73 @@ func (api *OceanEngineApi) DataSourceFileUpload(file string, advertiserId string
 
 	body, contentType, err := api.formCompose(params, files)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	req, err := api.NewRequest("POST", ApiDmpDataSourceFileUpload, contentType, body)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	resp, err := api.client.Do(req)
+	resp := new(DataSourceFileUploadResp)
+	if err := resp.doRequest(api, req, resp); err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+type DataSourceCreateResp struct {
+	OceanEngineResp
+	Data struct {
+		DataSourceId string `json:"data_source_id"`
+	} `json:"data"`
+}
+
+// @function: 数据源创建
+// @reference: https://ad.oceanengine.com/openapi/doc/index.html?id=502
+func (api *OceanEngineApi) DataSourceCreate(advertiserId string, dataSourceName string, dataSourceType string,
+	desc string, format int, storageType int, paths []string) (*DataSourceCreateResp, error) {
+	// 默认投放数据源类型为 UID
+	if dataSourceType == "" {
+		dataSourceType = "UID"
+	}
+
+	if advertiserId == "" || dataSourceName == "" || len(dataSourceName) >= 30 || len(desc) >= 256 ||
+		len(paths) >= 1000 || len(paths) == 0 || (dataSourceType != "UID" && dataSourceType != "DID") {
+		return nil, errors.New("data source create params check failed")
+	}
+
+	params := make(map[string]interface{})
+
+	params["advertiseId"] = advertiserId
+	params["data_source_name"] = dataSourceName
+	params["description"] = desc
+	params["data_format"] = 0
+	params["file_storage_type"] = 0
+
+	if format != 0 {
+		params["data_format"] = format
+	}
+
+	if storageType != 0 {
+		params["file_storage_type"] = storageType
+	}
+
+	body, err := json.Marshal(params)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	if err := api.checkResp(req, resp); err != nil {
-		return "", err
+	req, err := api.NewRequest("POST", ApiDmpDataSourceCreate, ContentTypeJson, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
 	}
 
-	defer resp.Body.Close()
+	resp := new(DataSourceCreateResp)
+	if err := resp.doRequest(api, req, resp); err != nil {
+		return nil, err
+	}
 
-	bytes, _ := ioutil.ReadAll(resp.Body)
-
-	return gjson.ParseBytes(bytes).Get("data.filepath").String(), nil
+	return resp, nil
 }

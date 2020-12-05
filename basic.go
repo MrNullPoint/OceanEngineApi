@@ -3,9 +3,9 @@ package OceanEngineApi
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/tidwall/gjson"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -17,8 +17,49 @@ import (
 	"time"
 )
 
-const ApiVersion = "2"
-const ApiUrlPrefix = "https://ad.oceanengine.com/open_api/"
+const (
+	ApiVersion   = "2"
+	ApiUrlPrefix = "https://ad.oceanengine.com/open_api/"
+)
+
+const (
+	ContentTypeJson = "application/json"
+)
+
+type respImplement interface {
+	String() string
+}
+
+type OceanEngineResp struct {
+	Code      int    `json:"code"`
+	Message   string `json:"message"`
+	RequestId string `json:"request_id"`
+}
+
+func (r *OceanEngineResp) String() string {
+	return "OceanEngineResp"
+}
+
+func (r *OceanEngineResp) doRequest(api *OceanEngineApi, req *http.Request, res respImplement) error {
+	resp, err := api.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if err := api.checkResp(req, resp); err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	bytes, _ := ioutil.ReadAll(resp.Body)
+
+	if err := json.Unmarshal(bytes, res); err != nil {
+		return err
+	}
+
+	return nil
+}
 
 type OceanEngineApi struct {
 	accessToken string
@@ -48,9 +89,13 @@ func (api *OceanEngineApi) NewRequest(method string, url string, contentType str
 // @function: 检查 oceanengine 返回是否正常, 不正常则设置 Debug 模式获取返回的 message 以便于调试错误
 func (api *OceanEngineApi) checkResp(req *http.Request, resp *http.Response) error {
 	bytes, _ := ioutil.ReadAll(resp.Body)
-	data := gjson.ParseBytes(bytes)
+	data := OceanEngineResp{}
 
-	if data.Get("code").Int() == 0 {
+	if err := json.Unmarshal(bytes, &data); err != nil {
+		return err
+	}
+
+	if data.Code == 0 {
 		return nil
 	}
 
@@ -65,8 +110,13 @@ func (api *OceanEngineApi) checkResp(req *http.Request, resp *http.Response) err
 	defer debugResp.Body.Close()
 
 	bytes, _ = ioutil.ReadAll(debugResp.Body)
+	data = OceanEngineResp{}
 
-	return errors.New(gjson.ParseBytes(bytes).Get("message").String())
+	if err := json.Unmarshal(bytes, &data); err != nil {
+		return err
+	}
+
+	return errors.New(data.Message)
 }
 
 // @function: 构造文件上传表单
