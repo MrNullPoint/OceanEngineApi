@@ -14,6 +14,7 @@ import (
 const (
 	ApiDmpDataSourceFileUpload = ApiUrlPrefix + ApiVersion + "/dmp/data_source/file/upload/"
 	ApiDmpDataSourceCreate     = ApiUrlPrefix + ApiVersion + "/dmp/data_source/create/"
+	ApiDmpDataSourceUpdate     = ApiUrlPrefix + ApiVersion + "/dmp/data_source/update/"
 )
 
 // @function: 构建 DMP 所需要的上传的 zip 文件
@@ -111,9 +112,10 @@ func (api *OceanEngineApi) DataSourceCreate(advertiserId string, dataSourceName 
 
 	params := make(map[string]interface{})
 
-	params["advertiseId"] = advertiserId
+	params["advertiser_id"] = advertiserId
 	params["data_source_name"] = dataSourceName
 	params["description"] = desc
+	params["file_paths"] = paths
 	params["data_format"] = 0
 	params["file_storage_type"] = 0
 
@@ -136,6 +138,55 @@ func (api *OceanEngineApi) DataSourceCreate(advertiserId string, dataSourceName 
 	}
 
 	resp := new(DataSourceCreateResp)
+	if err := resp.doRequest(api, req, resp); err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+type DataSourceUpdateResp struct {
+	OceanEngineResp
+	Data struct{} `json:"data"`
+}
+
+// @function: 数据源更新
+// @reference: https://ad.oceanengine.com/openapi/doc/index.html?id=503
+func (api *OceanEngineApi) DataSourceUpdate(advertiserId string, dataSourceId string, operationType int,
+	format int, storageType int, paths []string) (*DataSourceUpdateResp, error) {
+	if advertiserId == "" || dataSourceId == "" || (operationType != 1 && operationType != 2 && operationType != 3) ||
+		len(paths) >= 200 || len(paths) == 0 {
+		return nil, errors.New("data source update params check failed")
+	}
+
+	params := make(map[string]interface{})
+
+	params["advertiser_id"] = advertiserId
+	params["data_source_id"] = dataSourceId
+	params["operation_type"] = operationType
+	params["file_paths"] = paths
+	params["data_format"] = 0
+	params["file_storage_type"] = 0
+
+	if format != 0 {
+		params["data_format"] = format
+	}
+
+	if storageType != 0 {
+		params["file_storage_type"] = storageType
+	}
+
+	body, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := api.NewRequest("POST", ApiDmpDataSourceUpdate, ContentTypeJson, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+
+	resp := new(DataSourceUpdateResp)
 	if err := resp.doRequest(api, req, resp); err != nil {
 		return nil, err
 	}
