@@ -18,6 +18,7 @@ const (
 	ApiDmpDataSourceUpdate     = ApiUrlPrefix + ApiVersion + "/dmp/data_source/update/"
 	ApiDmpDataSourceDetail     = ApiUrlPrefix + ApiVersion + "/dmp/data_source/read/"
 	ApiDmpAudiencePublish      = ApiUrlPrefix + ApiVersion + "/dmp/custom_audience/publish/"
+	ApiDmpAudiencePush         = ApiUrlPrefix + ApiVersion + "/dmp/custom_audience/push_v2/"
 )
 
 // @function: 构建 DMP 所需要的上传的 zip 文件
@@ -291,6 +292,38 @@ func (api *OceanEngineApi) AudiencePublish(advertiserId int, audienceId int) (*A
 	}
 
 	resp := new(AudiencePublishResp)
+	if err := resp.doRequest(api, req, resp); err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+type AudiencePushResp struct {
+	OceanEngineResp
+	Data struct{} `json:"data"`
+}
+
+// @function: 推送人群包
+// @reference: https://ad.oceanengine.com/openapi/doc/index.html?id=508
+func (api *OceanEngineApi) AudiencePush(advertiserId int, audienceId int, targetAdvertiserIds []int) (*AudiencePushResp, error) {
+	params := make(map[string]interface{})
+
+	params["advertiser_id"] = advertiserId
+	params["custom_audience_id"] = audienceId
+	params["target_advertiser_ids"] = targetAdvertiserIds
+
+	body, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := api.NewRequest("POST", ApiDmpAudiencePush, ContentTypeJson, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+
+	resp := new(AudiencePushResp)
 	if err := resp.doRequest(api, req, resp); err != nil {
 		return nil, err
 	}
