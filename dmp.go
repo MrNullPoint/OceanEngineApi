@@ -9,6 +9,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"os"
 	"path/filepath"
+	"strconv"
 )
 
 const (
@@ -16,6 +17,7 @@ const (
 	ApiDmpDataSourceCreate     = ApiUrlPrefix + ApiVersion + "/dmp/data_source/create/"
 	ApiDmpDataSourceUpdate     = ApiUrlPrefix + ApiVersion + "/dmp/data_source/update/"
 	ApiDmpDataSourceDetail     = ApiUrlPrefix + ApiVersion + "/dmp/data_source/read/"
+	ApiDmpAudiencePublish      = ApiUrlPrefix + ApiVersion + "/dmp/custom_audience/publish/"
 )
 
 // @function: 构建 DMP 所需要的上传的 zip 文件
@@ -65,9 +67,9 @@ type DataSourceFileUploadResp struct {
 
 // @function: 数据源文件上传
 // @reference: https://ad.oceanengine.com/openapi/doc/index.html?id=501
-func (api *OceanEngineApi) DataSourceFileUpload(file string, advertiserId string) (*DataSourceFileUploadResp, error) {
+func (api *OceanEngineApi) DataSourceFileUpload(file string, advertiserId int) (*DataSourceFileUploadResp, error) {
 	params := make(map[string]string)
-	params["advertiseId"] = advertiserId
+	params["advertiseId"] = strconv.Itoa(advertiserId)
 
 	files := make(map[string]string)
 	files["file"] = file
@@ -99,14 +101,14 @@ type DataSourceCreateResp struct {
 
 // @function: 数据源创建
 // @reference: https://ad.oceanengine.com/openapi/doc/index.html?id=502
-func (api *OceanEngineApi) DataSourceCreate(advertiserId string, dataSourceName string, dataSourceType string,
+func (api *OceanEngineApi) DataSourceCreate(advertiserId int, dataSourceName string, dataSourceType string,
 	desc string, format int, storageType int, paths []string) (*DataSourceCreateResp, error) {
 	// 默认投放数据源类型为 UID
 	if dataSourceType == "" {
 		dataSourceType = "UID"
 	}
 
-	if advertiserId == "" || dataSourceName == "" || len(dataSourceName) >= 30 || len(desc) >= 256 ||
+	if dataSourceName == "" || len(dataSourceName) >= 30 || len(desc) >= 256 ||
 		len(paths) >= 1000 || len(paths) == 0 || (dataSourceType != "UID" && dataSourceType != "DID") {
 		return nil, errors.New("data source create params check failed")
 	}
@@ -153,9 +155,9 @@ type DataSourceUpdateResp struct {
 
 // @function: 数据源更新
 // @reference: https://ad.oceanengine.com/openapi/doc/index.html?id=504
-func (api *OceanEngineApi) DataSourceUpdate(advertiserId string, dataSourceId string, operationType int,
+func (api *OceanEngineApi) DataSourceUpdate(advertiserId int, dataSourceId string, operationType int,
 	format int, storageType int, paths []string) (*DataSourceUpdateResp, error) {
-	if advertiserId == "" || dataSourceId == "" || (operationType != 1 && operationType != 2 && operationType != 3) ||
+	if dataSourceId == "" || (operationType != 1 && operationType != 2 && operationType != 3) ||
 		len(paths) >= 200 || len(paths) == 0 {
 		return nil, errors.New("data source update params check failed")
 	}
@@ -202,30 +204,30 @@ type DataSourceDetailResp struct {
 			Name                       string `json:"name"`
 			DataSourceId               string `json:"data_source_id"`
 			Description                string `json:"description"`
-			Status                     int32  `json:"status"`
+			Status                     int    `json:"status"`
 			CoverNum                   int64  `json:"cover_num"`
 			UploadNum                  int64  `json:"upload_num"`
 			CreateTime                 int64  `json:"create_time"`
 			ModifyTime                 int64  `json:"modify_time"`
-			LatestPublishedChangeLogId int32  `json:"latest_published_change_log_id"`
+			LatestPublishedChangeLogId int    `json:"latest_published_change_log_id"`
 			LatestPublishedTime        int64  `json:"latest_published_time"`
 			DataSourceType             string `json:"data_source_type"`
 			DefaultAudience            struct {
-				AdvertiserId     string `json:"advertiser_id"`
+				AdvertiserId     int    `json:"advertiser_id"`
 				CustomAudienceId int    `json:"custom_audience_id"`
 				Name             string `json:"name"`
-				CustomType       int32  `json:"custom_type"`
+				CustomType       int    `json:"custom_type"`
 				Source           string `json:"source"`
-				Status           int32  `json:"status"`
-				PushStatus       int32  `json:"push_status"`
+				Status           int    `json:"status"`
+				PushStatus       int    `json:"push_status"`
 				UploadNum        int64  `json:"upload_num"`
 				CoverNum         int64  `json:"cover_num"`
 				ExpiryDate       string `json:"expiry_date"`
 				CreateTime       int64  `json:"create_time"`
 				ModifyTime       int64  `json:"modify_time"`
-				Isdel            int32  `json:"isdel"`
-				CalculateSubType int32  `json:"calculate_sub_type"`
-				CalculateType    int32  `json:"calculate_type"`
+				Isdel            int    `json:"isdel"`
+				CalculateSubType int    `json:"calculate_sub_type"`
+				CalculateType    int    `json:"calculate_type"`
 				DataSourceId     string `json:"data_source_id"`
 				Tag              string `json:"tag"`
 				ThirdPartyInfo   string `json:"third_party_info"`
@@ -237,7 +239,7 @@ type DataSourceDetailResp struct {
 
 // @function: 数据源详细信息
 // @reference: https://ad.oceanengine.com/openapi/doc/index.html?id=505
-func (api *OceanEngineApi) DataSourceDetail(advertiserId string, dataSourceIds []string) (*DataSourceDetailResp, error) {
+func (api *OceanEngineApi) DataSourceDetail(advertiserId int, dataSourceIds []string) (*DataSourceDetailResp, error) {
 	if len(dataSourceIds) == 0 || len(dataSourceIds) >= 400 {
 		return nil, errors.New("data source detail params check failed")
 	}
@@ -258,6 +260,37 @@ func (api *OceanEngineApi) DataSourceDetail(advertiserId string, dataSourceIds [
 	}
 
 	resp := new(DataSourceDetailResp)
+	if err := resp.doRequest(api, req, resp); err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+type AudiencePublishResp struct {
+	OceanEngineResp
+	Data struct{} `json:"data"`
+}
+
+// @function: 发布人群包
+// @reference: https://ad.oceanengine.com/openapi/doc/index.html?id=508
+func (api *OceanEngineApi) AudiencePublish(advertiserId int, audienceId int) (*AudiencePublishResp, error) {
+	params := make(map[string]interface{})
+
+	params["advertiser_id"] = advertiserId
+	params["custom_audience_id"] = audienceId
+
+	body, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := api.NewRequest("POST", ApiDmpAudiencePublish, ContentTypeJson, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+
+	resp := new(AudiencePublishResp)
 	if err := resp.doRequest(api, req, resp); err != nil {
 		return nil, err
 	}
