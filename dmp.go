@@ -305,7 +305,7 @@ type AudiencePushResp struct {
 }
 
 // @function: 推送人群包
-// @reference: https://ad.oceanengine.com/openapi/doc/index.html?id=508
+// @reference: https://ad.oceanengine.com/openapi/doc/index.html?id=509
 func (api *OceanEngineApi) AudiencePush(advertiserId int, audienceId int, targetAdvertiserIds []int) (*AudiencePushResp, error) {
 	params := make(map[string]interface{})
 
