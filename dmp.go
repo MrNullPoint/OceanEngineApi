@@ -15,6 +15,7 @@ const (
 	ApiDmpDataSourceFileUpload = ApiUrlPrefix + ApiVersion + "/dmp/data_source/file/upload/"
 	ApiDmpDataSourceCreate     = ApiUrlPrefix + ApiVersion + "/dmp/data_source/create/"
 	ApiDmpDataSourceUpdate     = ApiUrlPrefix + ApiVersion + "/dmp/data_source/update/"
+	ApiDmpDataSourceDetail     = ApiUrlPrefix + ApiVersion + "/dmp/data_source/read/"
 )
 
 // @function: 构建 DMP 所需要的上传的 zip 文件
@@ -151,7 +152,7 @@ type DataSourceUpdateResp struct {
 }
 
 // @function: 数据源更新
-// @reference: https://ad.oceanengine.com/openapi/doc/index.html?id=503
+// @reference: https://ad.oceanengine.com/openapi/doc/index.html?id=504
 func (api *OceanEngineApi) DataSourceUpdate(advertiserId string, dataSourceId string, operationType int,
 	format int, storageType int, paths []string) (*DataSourceUpdateResp, error) {
 	if advertiserId == "" || dataSourceId == "" || (operationType != 1 && operationType != 2 && operationType != 3) ||
@@ -187,6 +188,76 @@ func (api *OceanEngineApi) DataSourceUpdate(advertiserId string, dataSourceId st
 	}
 
 	resp := new(DataSourceUpdateResp)
+	if err := resp.doRequest(api, req, resp); err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+type DataSourceDetailResp struct {
+	OceanEngineResp
+	Data struct {
+		DataList []struct {
+			Name                       string `json:"name"`
+			DataSourceId               string `json:"data_source_id"`
+			Description                string `json:"description"`
+			Status                     int32  `json:"status"`
+			CoverNum                   int64  `json:"cover_num"`
+			UploadNum                  int64  `json:"upload_num"`
+			CreateTime                 int64  `json:"create_time"`
+			ModifyTime                 int64  `json:"modify_time"`
+			LatestPublishedChangeLogId int32  `json:"latest_published_change_log_id"`
+			LatestPublishedTime        int64  `json:"latest_published_time"`
+			DataSourceType             string `json:"data_source_type"`
+			DefaultAudience            struct {
+				AdvertiserId     string `json:"advertiser_id"`
+				CustomAudienceId int    `json:"custom_audience_id"`
+				Name             string `json:"name"`
+				CustomType       int32  `json:"custom_type"`
+				Source           string `json:"source"`
+				Status           int32  `json:"status"`
+				PushStatus       int32  `json:"push_status"`
+				UploadNum        int64  `json:"upload_num"`
+				CoverNum         int64  `json:"cover_num"`
+				ExpiryDate       string `json:"expiry_date"`
+				CreateTime       int64  `json:"create_time"`
+				ModifyTime       int64  `json:"modify_time"`
+				Isdel            int32  `json:"isdel"`
+				CalculateSubType int32  `json:"calculate_sub_type"`
+				CalculateType    int32  `json:"calculate_type"`
+				DataSourceId     string `json:"data_source_id"`
+				Tag              string `json:"tag"`
+				ThirdPartyInfo   string `json:"third_party_info"`
+				DeliveryStatus   string `json:"delivery_status"`
+			} `json:"default_audience"`
+		} `json:"data_list"`
+	} `json:"data"`
+}
+
+// @function: 数据源详细信息
+// @reference: https://ad.oceanengine.com/openapi/doc/index.html?id=505
+func (api *OceanEngineApi) DataSourceDetail(advertiserId string, dataSourceIds []string) (*DataSourceDetailResp, error) {
+	if len(dataSourceIds) == 0 || len(dataSourceIds) >= 400 {
+		return nil, errors.New("data source detail params check failed")
+	}
+
+	params := make(map[string]interface{})
+
+	params["advertiser_id"] = advertiserId
+	params["data_source_id_list"] = dataSourceIds
+
+	body, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := api.NewRequest("GET", ApiDmpDataSourceDetail, ContentTypeJson, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+
+	resp := new(DataSourceDetailResp)
 	if err := resp.doRequest(api, req, resp); err != nil {
 		return nil, err
 	}
