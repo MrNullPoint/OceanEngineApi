@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"mime/multipart"
 	"net/http"
@@ -90,6 +91,8 @@ func (api *OceanEngineApi) NewRequest(method string, url string, contentType str
 func (api *OceanEngineApi) checkResp(req *http.Request, resp *http.Response) error {
 	bytes, _ := ioutil.ReadAll(resp.Body)
 	data := OceanEngineResp{}
+
+	log.Print(string(bytes))
 
 	if err := json.Unmarshal(bytes, &data); err != nil {
 		return err
