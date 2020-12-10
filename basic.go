@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"mime/multipart"
 	"net/http"
@@ -47,13 +46,13 @@ func (r *OceanEngineResp) doRequest(api *OceanEngineApi, req *http.Request, res 
 		return err
 	}
 
-	if err := api.checkResp(req, resp); err != nil {
+	bytes, _ := ioutil.ReadAll(resp.Body)
+
+	if err := api.checkResp(req, bytes); err != nil {
 		return err
 	}
 
 	defer resp.Body.Close()
-
-	bytes, _ := ioutil.ReadAll(resp.Body)
 
 	if err := json.Unmarshal(bytes, res); err != nil {
 		return err
@@ -88,13 +87,10 @@ func (api *OceanEngineApi) NewRequest(method string, url string, contentType str
 }
 
 // @function: 检查 oceanengine 返回是否正常, 不正常则设置 Debug 模式获取返回的 message 以便于调试错误
-func (api *OceanEngineApi) checkResp(req *http.Request, resp *http.Response) error {
-	bytes, _ := ioutil.ReadAll(resp.Body)
+func (api *OceanEngineApi) checkResp(req *http.Request, body []byte) error {
 	data := OceanEngineResp{}
 
-	log.Print(string(bytes))
-
-	if err := json.Unmarshal(bytes, &data); err != nil {
+	if err := json.Unmarshal(body, &data); err != nil {
 		return err
 	}
 
@@ -112,7 +108,7 @@ func (api *OceanEngineApi) checkResp(req *http.Request, resp *http.Response) err
 
 	defer debugResp.Body.Close()
 
-	bytes, _ = ioutil.ReadAll(debugResp.Body)
+	bytes, _ := ioutil.ReadAll(debugResp.Body)
 	data = OceanEngineResp{}
 
 	if err := json.Unmarshal(bytes, &data); err != nil {

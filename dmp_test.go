@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/MrNullPoint/OceanEngineApi/pb"
 	"github.com/stretchr/testify/assert"
+	"log"
 	"testing"
 	"time"
 )
@@ -42,4 +43,24 @@ func TestDataSourceFileCompose(t *testing.T) {
 	zipPath, err := api.DataSourceFileCompose(data, "/tmp")
 	assert.Nil(t, err)
 	assert.NotEqual(t, zipPath, "")
+}
+
+func TestOceanEngineApi_DataSourceFileUpload(t *testing.T) {
+	api := NewOceanEngineApi("964fafa7e7c4b6ebed752f09108429eaeac9d98a")
+
+	paths := []string{
+		"/tmp/7da65e52f9e1f17471cfe555d33487ca.zip",
+		"/tmp/fdd569b1458c7fe1e5a8c6958fe7716b.zip",
+		"/tmp/b88bc726cc937d2eff166fab3b5c2633.zip",
+		"/tmp/01769e3ce7639c1a3a8b024b53106a35.zip",
+		"/tmp/952c4be36140c651551a578abb976232.zip",
+		"/tmp/1f34087616da01f89c6db9f79890b6ea.zip",
+		"/tmp/7121fda0f1ecb08acf0e1e099c4a09a1.zip",
+	}
+
+	for _, p := range paths {
+		resp, err := api.DataSourceFileUpload(p, 1667201949630478)
+		assert.Nil(t, err)
+		log.Println(resp.Data.FilePath)
+	}
 }
