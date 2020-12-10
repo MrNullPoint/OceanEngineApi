@@ -218,7 +218,7 @@ type DataSourceDetailResp struct {
 				CustomAudienceId int    `json:"custom_audience_id"`
 				Name             string `json:"name"`
 				CustomType       int    `json:"custom_type"`
-				Source           string `json:"source"`
+				Source           int    `json:"source"`
 				Status           int    `json:"status"`
 				PushStatus       int    `json:"push_status"`
 				UploadNum        int64  `json:"upload_num"`
