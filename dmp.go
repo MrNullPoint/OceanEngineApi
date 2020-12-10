@@ -70,7 +70,7 @@ type DataSourceFileUploadResp struct {
 // @reference: https://ad.oceanengine.com/openapi/doc/index.html?id=501
 func (api *OceanEngineApi) DataSourceFileUpload(file string, advertiserId int) (*DataSourceFileUploadResp, error) {
 	params := make(map[string]string)
-	params["advertiseId"] = strconv.Itoa(advertiserId)
+	params["advertiser_id"] = strconv.Itoa(advertiserId)
 
 	files := make(map[string]string)
 	files["file"] = file
