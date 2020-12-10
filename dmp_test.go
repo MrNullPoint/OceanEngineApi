@@ -2,6 +2,7 @@ package OceanEngineApi
 
 import (
 	"crypto/md5"
+	"encoding/json"
 	"fmt"
 	"github.com/MrNullPoint/OceanEngineApi/pb"
 	"github.com/stretchr/testify/assert"
@@ -78,10 +79,39 @@ func TestOceanEngineApi_DataSourceFileCreate(t *testing.T) {
 		"1667201949630478-c8dd6c37aeadc4f1054fa190caf97dc7",
 	}
 
-	resp, err := api.DataSourceCreate(1667201949630478, "test", "UID", "test",
+	resp, err := api.DataSourceCreate(1667201949630478, "API-Upload-test", "UID", "API-Upload-test",
 		0, 0, paths)
 
 	assert.Nil(t, err)
 
-	log.Println(resp)
+	log.Println(resp.Data.DataSourceId)
+
+	//
+}
+
+func TestOceanEngineApi_DataSourceDetail(t *testing.T) {
+	ticker := time.NewTicker(1 * time.Minute)
+	defer ticker.Stop()
+
+	api := NewOceanEngineApi("d88e6e45339d9bf89a373ba76cfd6b7100e381a3")
+
+	for {
+		select {
+		case <-ticker.C:
+			resp, err := api.DataSourceDetail(1667201949630478, []string{"0f9db0b4162a43998dd513f10189bd60"})
+			assert.Nil(t, err)
+
+			b, _ := json.Marshal(resp)
+			log.Println(string(b))
+
+			if len(resp.Data.DataList) == 0 {
+				t.Error("no data list returned")
+			}
+
+			if id := resp.Data.DataList[0].DefaultAudience.CustomAudienceId; id != 0 {
+				log.Println(id)
+				return
+			}
+		}
+	}
 }

@@ -18,9 +18,9 @@ api := NewOceanEngineApi("access_token")
 | ---- | ------------------------- | ------------------------- | ------ |
 | DMP  | 生成 DMP 数据源文件压缩包 | api.DataSourceFileCompose | passed |
 | DMP  | 上传数据源文件            | api.DataSourceFileUpload  | passed |
-| DMP  | 数据源创建                | api.DataSourceCreate      |        |
-| DMP  | 数据源更新                | api.DataSourceUpdate      |        |
-| DMP  | 数据源详细信息            | api.DataSourceDetail      |        |
+| DMP  | 数据源创建                | api.DataSourceCreate      | passed |
+| DMP  | 数据源更新                | api.DataSourceUpdate      | passed |
+| DMP  | 数据源详细信息            | api.DataSourceDetail      | passed |
 | DMP  | 发布人群包                | api.AudiencePublish       |        |
 | DMP  | 推送人群包                | api.AudiencePush          |        |
 
