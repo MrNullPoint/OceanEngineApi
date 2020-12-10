@@ -208,10 +208,10 @@ type DataSourceDetailResp struct {
 			Status                     int    `json:"status"`
 			CoverNum                   int64  `json:"cover_num"`
 			UploadNum                  int64  `json:"upload_num"`
-			CreateTime                 int64  `json:"create_time"`
-			ModifyTime                 int64  `json:"modify_time"`
+			CreateTime                 string `json:"create_time"`
+			ModifyTime                 string `json:"modify_time"`
 			LatestPublishedChangeLogId int    `json:"latest_published_change_log_id"`
-			LatestPublishedTime        int64  `json:"latest_published_time"`
+			LatestPublishedTime        string `json:"latest_published_time"`
 			DataSourceType             string `json:"data_source_type"`
 			DefaultAudience            struct {
 				AdvertiserId     int    `json:"advertiser_id"`
@@ -224,8 +224,8 @@ type DataSourceDetailResp struct {
 				UploadNum        int64  `json:"upload_num"`
 				CoverNum         int64  `json:"cover_num"`
 				ExpiryDate       string `json:"expiry_date"`
-				CreateTime       int64  `json:"create_time"`
-				ModifyTime       int64  `json:"modify_time"`
+				CreateTime       string `json:"create_time"`
+				ModifyTime       string `json:"modify_time"`
 				Isdel            int    `json:"isdel"`
 				CalculateSubType int    `json:"calculate_sub_type"`
 				CalculateType    int    `json:"calculate_type"`

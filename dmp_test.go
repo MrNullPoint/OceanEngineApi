@@ -64,3 +64,24 @@ func TestOceanEngineApi_DataSourceFileUpload(t *testing.T) {
 		log.Println(resp.Data.FilePath)
 	}
 }
+
+func TestOceanEngineApi_DataSourceFileCreate(t *testing.T) {
+	api := NewOceanEngineApi("964fafa7e7c4b6ebed752f09108429eaeac9d98a")
+
+	paths := []string{
+		"1667201949630478-0fba4c5ebd65c89d876880059a564737",
+		"1667201949630478-c0274f88cc0738da95f7d332fa66d80e",
+		"1667201949630478-0f4288b5caeefba2189cb8fad484be2e",
+		"1667201949630478-693182e1a952b9f44aaa8405411dcfc5",
+		"1667201949630478-debb1dd33ceff27a5f6ca5468d2ebe9b",
+		"1667201949630478-2f1d8044f189f0316eca99d4c541f0a9",
+		"1667201949630478-c8dd6c37aeadc4f1054fa190caf97dc7",
+	}
+
+	resp, err := api.DataSourceCreate(1667201949630478, "test", "UID", "test",
+		0, 0, paths)
+
+	assert.Nil(t, err)
+
+	log.Println(resp)
+}
