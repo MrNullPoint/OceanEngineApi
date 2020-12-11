@@ -101,6 +101,10 @@ func (api *OceanEngineApi) checkResp(req *http.Request, body []byte) error {
 		return nil
 	}
 
+	if data.Code == 40105 {
+		return ErrTokenInValid
+	}
+
 	return errors.New(strconv.Itoa(data.Code))
 }
 
