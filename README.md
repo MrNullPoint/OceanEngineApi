@@ -27,3 +27,5 @@ api := NewOceanEngineApi("access_token")
 ## 其他注意
 
 1. 巨量引擎目前 DMP 数据格式要求是 PROTOBUF V2 的版本，我特 protoc 了一个根据头条原来 proto 文件对应的 `toutiao_dmp.pb.go` ，同时修改了头条 DMP 文件说明页面中的 python 代码几处小 bug，修改 bug 的文件对应 pb 目录下的 `toutiao_dmp_test.py` 和 `toutiao_dmp_validate.py`
+2. 数据源详细信息接口 巨量 返回的参数中 data.data_list.default_audience.source 文档中是 string 类型，可是实际返回的是整型
+

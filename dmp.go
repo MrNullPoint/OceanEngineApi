@@ -202,17 +202,18 @@ type DataSourceDetailResp struct {
 	OceanEngineResp
 	Data struct {
 		DataList []struct {
-			Name                       string `json:"name"`
-			DataSourceId               string `json:"data_source_id"`
-			Description                string `json:"description"`
-			Status                     int    `json:"status"`
-			CoverNum                   int64  `json:"cover_num"`
-			UploadNum                  int64  `json:"upload_num"`
-			CreateTime                 string `json:"create_time"`
-			ModifyTime                 string `json:"modify_time"`
-			LatestPublishedChangeLogId int    `json:"latest_published_change_log_id"`
-			LatestPublishedTime        string `json:"latest_published_time"`
-			DataSourceType             string `json:"data_source_type"`
+			Name                       string                   `json:"name"`
+			DataSourceId               string                   `json:"data_source_id"`
+			Description                string                   `json:"description"`
+			Status                     int                      `json:"status"`
+			CoverNum                   int64                    `json:"cover_num"`
+			UploadNum                  int64                    `json:"upload_num"`
+			CreateTime                 string                   `json:"create_time"`
+			ModifyTime                 string                   `json:"modify_time"`
+			LatestPublishedChangeLogId int                      `json:"latest_published_change_log_id"`
+			LatestPublishedTime        string                   `json:"latest_published_time"`
+			DataSourceType             string                   `json:"data_source_type"`
+			ChangeLogs                 []map[string]interface{} `json:"change_logs"`
 			DefaultAudience            struct {
 				AdvertiserId     int    `json:"advertiser_id"`
 				CustomAudienceId int    `json:"custom_audience_id"`
