@@ -21,7 +21,7 @@ api := NewOceanEngineApi("access_token")
 | DMP  | 数据源创建                | api.DataSourceCreate      | passed |
 | DMP  | 数据源更新                | api.DataSourceUpdate      | passed |
 | DMP  | 数据源详细信息            | api.DataSourceDetail      | passed |
-| DMP  | 发布人群包                | api.AudiencePublish       |        |
+| DMP  | 发布人群包                | api.AudiencePublish       | passed |
 | DMP  | 推送人群包                | api.AudiencePush          |        |
 
 ## 其他注意
