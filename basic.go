@@ -13,9 +13,12 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
+
+var ErrTokenInValid = errors.New("access token is invalid")
 
 const (
 	ApiVersion   = "2"
@@ -98,24 +101,7 @@ func (api *OceanEngineApi) checkResp(req *http.Request, body []byte) error {
 		return nil
 	}
 
-	req.Header.Add("X-Debug-Mode", "1")
-
-	debugResp, err := api.client.Do(req)
-
-	if err != nil {
-		return err
-	}
-
-	defer debugResp.Body.Close()
-
-	bytes, _ := ioutil.ReadAll(debugResp.Body)
-	data = OceanEngineResp{}
-
-	if err := json.Unmarshal(bytes, &data); err != nil {
-		return err
-	}
-
-	return errors.New(data.Message)
+	return errors.New(strconv.Itoa(data.Code))
 }
 
 // @function: 构造文件上传表单

@@ -94,12 +94,12 @@ func TestOceanEngineApi_DataSourceDetail(t *testing.T) {
 	//ticker := time.NewTicker(1 * time.Minute)
 	//defer ticker.Stop()
 
-	api := NewOceanEngineApi("0")
+	api := NewOceanEngineApi("")
 
 	//for {
 	//	select {
 	//	case <-ticker.C:
-	resp, err := api.DataSourceDetail(0, []string{"0"})
+	resp, err := api.DataSourceDetail(1667201949630478, []string{""})
 	assert.Nil(t, err)
 
 	b, _ := json.Marshal(resp)
