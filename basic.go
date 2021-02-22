@@ -105,7 +105,7 @@ func (api *OceanEngineApi) checkResp(req *http.Request, body []byte) error {
 		return ErrTokenInValid
 	}
 
-	return errors.New(strconv.Itoa(data.Code))
+	return errors.New(strconv.Itoa(data.Code) + ":" + data.Message)
 }
 
 // @function: 构造文件上传表单
